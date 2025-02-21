@@ -43,3 +43,26 @@ and exits.
 The goroutine does not close the file via the `(*os.File).Close()`
 method.
 That leaves the file descriptor represented by the `*os.File` open.
+
+You can see a Linux process' open file descriptors in a pseudo-directory,
+`/proc/$PID/fd/`.
+Try it (you are using Linux, right?): `ls -l /proc/$$/fd`
+
+The program reads file names from the directory `/proc/$PID/fd`
+(`$PID` represents the program's process ID when it's running).
+File names are links, and look like "1", "2", "3" ...
+The linked-to files in the case of this program are files
+created by `os.CreateTemp`.
+As the program runs, it racks up open file descriptors.
+Remember`that the program does not call (*os.File).Close()`.
+Every tenth file (conveniently, every 10 minutes),
+the program calls `runtime.GC()`, triggering a garbage collection.
+Since 10 open file descriptors exist at this point,
+the "finalizer" set up in the `os` package code gets executed,
+and the encapsulated file descriptors get closed.
+
+I believed that the Go runtime did a garbage collection after
+60 seconds of execution, or some other threshold amount of allocations
+got hit, whichever came first.
+That's why this program creates a new file every 60 seconds.
+Apparently, I was wrong.
