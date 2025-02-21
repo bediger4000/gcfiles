@@ -1,4 +1,4 @@
-# Go Runtime Garbage Collects Open Files
+# Go Runtime Garbage Collection Closes Open Files
 
 It turns out that the Go standard library hides Linux file descriptors
 (small integer values representing open files) from programmers
@@ -65,4 +65,4 @@ I believed that the Go runtime did a garbage collection after
 60 seconds of execution, or some other threshold amount of allocations
 got hit, whichever came first.
 That's why this program creates a new file every 60 seconds.
-Apparently, I was wrong.
+Apparently, I was wrong, and the whole topic is more subtle than I thought.
