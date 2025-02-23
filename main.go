@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -11,16 +12,21 @@ import (
 
 func main() {
 
+	interval := flag.Int("i", 60, "interval between file creations, seconds")
+	creations := flag.Int("c", 10, "file creations between running runtime.GC")
+
+	flag.Parse()
+
 	start := time.Now()
 
 	// use a ticker so that time consumed outside of waiting
 	// 60 seconds doesn't build up.
-	tkr := time.Tick(60 * time.Second)
+	tkr := time.Tick(time.Duration(*interval) * time.Second)
 
 	for i := 0; true; i++ {
 		go openAFile(i)
 		_ = <-tkr
-		if ((i + 1) % 10) == 0 {
+		if ((i + 1) % *creations) == 0 {
 			fmt.Printf("%s - created %d files, collecting garbage\n",
 				time.Since(start), i+1)
 			runtime.GC()
